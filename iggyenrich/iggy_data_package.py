@@ -66,21 +66,6 @@ def infer_bounds(boundaries: List[str] = [], features: List[str] = []) -> Dict:
     return bounds_features_to_load
 
 
-def qk2tilegeom(qk_str: str) -> Polygon:
-    """Convert quadkey (e.g. `0320212302300330123`) to its corresponding tile Polygon."""
-    qk = quadkey.from_str(qk_str)
-    corners = [
-        quadkey.TileAnchor.ANCHOR_NW,
-        quadkey.TileAnchor.ANCHOR_NE,
-        quadkey.TileAnchor.ANCHOR_SE,
-        quadkey.TileAnchor.ANCHOR_SW,
-        quadkey.TileAnchor.ANCHOR_NW,
-    ]
-    points_xy = [qk.to_geo(c) for c in corners]
-    poly = Polygon([Point(p[1], p[0]) for p in points_xy])
-    return poly
-
-
 class LocalIggyDataPackage(IggyDataPackage):
     iggy_version_id: str
     crosswalk_prefix: str
