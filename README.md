@@ -13,7 +13,7 @@ This package helps Iggy data users to enrich the points (or latitude/longitude p
     Install via pip:
 
     ```bash
-    pip install iggy-enrich-python
+    pip install iggyenrich
     ```
 
 3. **Enrich some data!**
