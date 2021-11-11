@@ -68,6 +68,8 @@ You can specify `iggy_version_id`, `crosswalk_prefix`, `base_loc`, and `iggy_pre
 Now, once your package is set up, you can bundle it with `IggyEnrich` and load the data:
 
 ```python
+from iggyenrich.iggy_enrich import IggyEnrich
+
 iggy = IggyEnrich(iggy_package=pkg)
 iggy.load()
 ```
@@ -108,7 +110,7 @@ enriched_df = iggy.enrich_df(df, latitude_col="latitude", longitude_col="longitu
 
 If you prefer working in GeoPandas, the `enrich_df` function can take a `GeoDataFrame` too:
 
-```
+```python
 import geopandas as gpd
 gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude), crs="WGS84")
 enriched_gdf = iggy.enrich_df(gdf)
@@ -119,7 +121,7 @@ enriched_gdf = iggy.enrich_df(gdf)
 You can find our Data README [here](https://www.askiggy.com/place-data-readme) and our Data Dictionary [here](https://docs.google.com/spreadsheets/d/1TtVr1glydr9-ne-28sRIlLKG2ZEqom-oOvKR1kOZ034/edit?usp=sharing).
 ## Contact us
 
-For questions or issues with using this code, please [add a New Issue](https://github.com/askiggy/iggy-enrich-python/issues/new) or [start a Discussion]() and we'll respond as quickly as possible.
+For questions or issues with using this code, please [add a New Issue](https://github.com/askiggy/iggy-enrich-python/issues/new) and we'll respond as quickly as possible.
 
 To get access to Iggy sample data please contact us [here](https://www.askiggy.com/contact)!
 

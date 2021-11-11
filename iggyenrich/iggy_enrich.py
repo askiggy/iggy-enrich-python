@@ -28,9 +28,7 @@ class IggyEnrich(BaseModel):
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Enrich geometry from input [Geo]DataFrame and return as new
         [Geo]DataFrame with same index, additional columns"""
-        enriched_gdf = self.iggy_package.enrich(
-            df, latitude_col=latitude_col, longitude_col=longitude_col
-        )
+        enriched_gdf = self.iggy_package.enrich(df, latitude_col=latitude_col, longitude_col=longitude_col)
         return enriched_gdf
 
     def enrich_points(
@@ -54,9 +52,7 @@ class IggyEnrich(BaseModel):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Enrich data with location features using Iggy"
-    )
+    parser = argparse.ArgumentParser(description="Enrich data with location features using Iggy")
     parser.add_argument(
         "-f",
         "--filename",
@@ -112,7 +108,5 @@ if __name__ == "__main__":
     iggy_data = IggyEnrich(iggy_package=LocalIggyDataPackage(**pkg_config))
     iggy_data.load()
 
-    enriched_gdf = iggy_data.enrich_df(
-        df, longitude_col=args.longitude_col, latitude_col=args.latitude_col
-    )
+    enriched_gdf = iggy_data.enrich_df(df, longitude_col=args.longitude_col, latitude_col=args.latitude_col)
     enriched_gdf.to_csv(filepath.parent / f"enriched_{filepath.name}")

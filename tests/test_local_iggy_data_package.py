@@ -54,10 +54,7 @@ def test_load_package_features(pkg: LocalIggyDataPackage):
 
 
 def test_enrich_features_df(pkg: LocalIggyDataPackage) -> pd.DataFrame:
-    test_points = [
-        wkt.loads(pt)
-        for pt in pkg.crosswalk_data.quadkey_centroid_geometry.sample(n=25)
-    ]
+    test_points = [wkt.loads(pt) for pt in pkg.crosswalk_data.quadkey_centroid_geometry.sample(n=25)]
     test_df = pd.DataFrame(
         {
             "point_id": [2 ** x for x in range(len(test_points))],
@@ -76,10 +73,7 @@ def test_enrich_features_df(pkg: LocalIggyDataPackage) -> pd.DataFrame:
 
 
 def test_enrich_features_gdf(pkg: LocalIggyDataPackage) -> gpd.GeoDataFrame:
-    test_points = [
-        wkt.loads(pt)
-        for pt in pkg.crosswalk_data.quadkey_centroid_geometry.sample(n=25)
-    ]
+    test_points = [wkt.loads(pt) for pt in pkg.crosswalk_data.quadkey_centroid_geometry.sample(n=25)]
     points_geoms = gpd.GeoSeries(test_points, crs="WGS84")
     test_gdf = gpd.GeoDataFrame(
         {
@@ -91,9 +85,7 @@ def test_enrich_features_gdf(pkg: LocalIggyDataPackage) -> gpd.GeoDataFrame:
     assert enriched_points.shape[0] == test_gdf.shape[0]
     assert type(enriched_points) == gpd.GeoDataFrame
     for feature_name in TEST_FEATURES:
-        assert (
-            feature_name in enriched_points.columns
-        ), f"{feature_name} not found in enriched points columns"
+        assert feature_name in enriched_points.columns, f"{feature_name} not found in enriched points columns"
     return enriched_points
 
 
