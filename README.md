@@ -10,21 +10,21 @@ This package helps Iggy data users to enrich the points (or latitude/longitude p
 
 2. **Install this library and dependencies.**
 
-Install via pip:
+    Install via pip:
 
-```bash
-pip install iggy-enrich-python
-```
+    ```bash
+    pip install iggy-enrich-python
+    ```
 
-3. **Enrich a dataframe!**
+3. **Enrich some data!**
 
-This repo contains a (very small) sample csv file with the locations of twenty four 7-11 stores in Pinellas County, FL. It has `latitude` and `longitude` columns specifying the location of each store and a few additional attributes. The easiest way to enrich a file like this (with *all* the available Iggy features) is by running:
+    This repo contains a (very small) sample csv file with the locations of twenty four 7-11 stores in Pinellas County, FL. It has `latitude` and `longitude` columns specifying the location of each store and a few additional attributes. The easiest way to enrich a file like this (with *all* the available Iggy features) is by running:
 
-```bash
-python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv
-```
+    ```bash
+    python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv
+    ```
 
-After a few seconds you'll find an "enriched" version of the file in `sample_data/enriched_pinellas_711s.csv` containing its original 24 data rows, but the number of columns has exploded from the original 7 to 2,808. These extra ~2,800 columns contain Iggy features.
+    After a few seconds you'll find an "enriched" version of the file in `sample_data/enriched_pinellas_711s.csv` containing its original 24 data rows, but the number of columns has exploded from the original 7 to 2,808. These extra ~2,800 columns contain Iggy features.
 
 ## Examples
 
