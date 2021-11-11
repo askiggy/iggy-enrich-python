@@ -10,7 +10,7 @@ from shapely.geometry import Point, Polygon
 from typing import Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 KNOWN_BOUNDARIES = [
     "qk_isochrone_walk_10m",
@@ -52,7 +52,8 @@ class IggyDataPackage(BaseModel, abc.ABC):
 
 
 def infer_bounds(boundaries: List[str] = [], features: List[str] = []) -> Dict:
-    # infer boundaries to load
+    """Determine which boundaries, and any specific features within the boundary,
+    to load"""
     bounds_features_to_load = {}
     if boundaries:
         bounds_features_to_load = {b: [] for b in boundaries if b in KNOWN_BOUNDARIES}
@@ -99,21 +100,22 @@ class LocalIggyDataPackage(IggyDataPackage):
         )
 
     def load(self, boundaries: List[str] = [], features: List[str] = []) -> None:
-        # load iggy geoms
+        """Load Iggy data from parquet files into memory"""
+        # load iggy crosswalk if not already loaded
         if self.crosswalk_data is None:
             self.crosswalk_data = pd.read_parquet(self.crosswalk_loc)
             self.crosswalk_data.set_index("id", inplace=True)
-            print(
+            logger.info(
                 f"Loaded {self.crosswalk_data.shape[0]} geometries from {self.crosswalk_loc}."
             )
         else:
-            print(f"Crosswalk data already loaded...skipping")
+            logger.info(f"Crosswalk data already loaded...skipping")
 
-        # infer boundaries to load
+        # infer boundaries + features to load
         bounds_features_to_load = infer_bounds(boundaries, features)
-        print(f"Will load boundaries {bounds_features_to_load.keys()}...")
+        logger.info(f"Will load boundaries {bounds_features_to_load.keys()}...")
 
-        # load boundaries
+        # load requested boundaries + features if they're not already
         for boundary, boundary_features in bounds_features_to_load.items():
             if boundary_features != self.bounds_features.get(boundary):
                 bnd_file = (
@@ -123,16 +125,16 @@ class LocalIggyDataPackage(IggyDataPackage):
                 df = pd.read_parquet(bnd_file)
                 df.columns = df.columns.map(lambda x: str(x) + f"_{boundary}")
                 if boundary_features:
-                    keepfeatures = boundary_features
-                    if f"id_{boundary}" not in keepfeatures:
-                        keepfeatures = [f"id_{boundary}"] + keepfeatures
+                    keepfeatures = [
+                        f for f in boundary_features if f != f"id_{boundary}"
+                    ] + [f"id_{boundary}"]
                     df = df[keepfeatures]
                 self.boundary_data[boundary] = df
-                print(
+                logger.info(
                     f"Loaded boundary {boundary} with {df.shape[0]} rows and {df.shape[1]} columns"
                 )
             else:
-                print(
+                logger.info(
                     f"Boundary {boundary} with {self.boundary_data[boundary].shape[0]} "
                     f"rows and {self.boundary_data[boundary].shape[1]} columns already loaded."
                 )
@@ -142,7 +144,7 @@ class LocalIggyDataPackage(IggyDataPackage):
             if boundary not in bounds_features_to_load:
                 remove_boundaries.append(boundary)
         for rb in remove_boundaries:
-            print(f"Removed data for boundary {rb}")
+            logger.info(f"Removed data for boundary {rb}")
             del self.boundary_data[rb]
 
         self.bounds_features = bounds_features_to_load
@@ -155,6 +157,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         zoom: int = 19,
         drop_qk_col: bool = True,
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Enrich a DataFrame or GeoDataFrame with Iggy columns"""
         # join input points to iggy quadkeys
         points_ = points.copy()
         if not points.index.name:
