@@ -22,8 +22,6 @@ KNOWN_BOUNDARIES = [
     "zipcode",
 ]
 
-# TODO: do not re-load data if loaded already (enable refresh of load boundaries+features)
-
 
 class GeomTypeEnum(str, Enum):
     json = "json"
