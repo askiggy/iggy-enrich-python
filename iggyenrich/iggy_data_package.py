@@ -6,7 +6,6 @@ from enum import Enum
 from pathlib import Path
 from pydantic import BaseModel, validator
 from pyquadkey2 import quadkey
-from shapely.geometry import Point, Polygon
 from typing import Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
