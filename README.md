@@ -6,7 +6,13 @@ This package helps Iggy data users to enrich the points (or latitude/longitude p
 
 ## Getting started
 
-1. **Get Iggy data.** Please contact us [here](https://www.askiggy.com/contact) and we'll send you a link to some sample data to play around with. 
+1. **Get Iggy data.** Please request access [here](https://docs.askiggy.com/download/sample-data) and we'll immediately send you a link to some sample data to play around with. 
+
+    What you'll receive is a sample data file in `.tar.gz` format. Un-compress it in a location of your choosing, for example:
+    
+    ```bash
+    tar -xzvf iggy-package-wkt-<iggy_version_id>_<iggy_prefix>.tar.gz
+    ```
 
 2. **Install this library and dependencies.**
 
