@@ -27,9 +27,11 @@ This package helps Iggy data users to enrich the points (or latitude/longitude p
     This repo contains a (very small) sample csv file with the locations of twenty four 7-11 stores in Pinellas County, FL. It has `latitude` and `longitude` columns specifying the location of each store and a few additional attributes. The easiest way to enrich a file like this (with *all* the available Iggy features) is by running:
 
     ```bash
-    python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv
+    python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv --iggy_base_loc <iggy_base_loc> --iggy_version_id <iggy_version_id>
     ```
 
+    ...where `<iggy_base_loc>` is the local directory or S3 bucket in which you have your un-compressed Iggy data, and `<iggy_version_id>` is the version of Iggy data you have (something like `"20211110214810"`).
+    
     After a few seconds you'll find an "enriched" version of the file in `sample_data/enriched_pinellas_711s.csv` containing its original 24 data rows, but the number of columns has exploded from the original 7 to 2,808. These extra ~2,800 columns contain Iggy features.
 
 ## Examples
