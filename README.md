@@ -84,7 +84,7 @@ iggy.load()
 
 ### Choose specific boundaries+features 
 
-What if I don't want to enrich my data with *all* of Iggy's features, but rather want to select a few specific boundaries or features? (See our [Data README](https://www.askiggy.com/place-data-readme) and [Data Dictionary](https://docs.google.com/spreadsheets/d/1TtVr1glydr9-ne-28sRIlLKG2ZEqom-oOvKR1kOZ034/edit?usp=sharing)) for what's available.)
+What if I don't want to enrich my data with *all* of Iggy's features, but rather want to select a few specific boundaries or features? (See our [Data README](https://www.askiggy.com/place-data-readme) and [Data Dictionary](https://docs.askiggy.com/reference/data-dictionary)) for what's available.)
 
 
 You can narrow things down by specifing what you want when calling `load()`:
@@ -126,7 +126,8 @@ enriched_gdf = iggy.enrich_df(gdf)
 
 ## More resources
 
-You can find our Data README [here](https://www.askiggy.com/place-data-readme) and our Data Dictionary [here](https://docs.google.com/spreadsheets/d/1TtVr1glydr9-ne-28sRIlLKG2ZEqom-oOvKR1kOZ034/edit?usp=sharing).
+You can find our Data README [here](https://www.askiggy.com/place-data-readme) and our Data Dictionary [here](https://docs.askiggy.com/reference/data-dictionary).
+
 ## Contact us
 
 For questions or issues with using this code, please [add a New Issue](https://github.com/askiggy/iggy-enrich-python/issues/new) and we'll respond as quickly as possible.
