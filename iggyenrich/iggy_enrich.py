@@ -1,7 +1,7 @@
 import argparse
 import geopandas as gpd
+import os
 import pandas as pd
-from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Tuple, Union
 
@@ -96,9 +96,8 @@ if __name__ == "__main__":
         help="Name of column in input file containing latitude",
     )
     args = parser.parse_args()
-    filepath = Path(args.filename)
 
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(args.filename)
     pkg_config = {
         "base_loc": args.iggy_base_loc,
         "iggy_version_id": args.iggy_version_id,
@@ -109,4 +108,5 @@ if __name__ == "__main__":
     iggy_data.load()
 
     enriched_gdf = iggy_data.enrich_df(df, longitude_col=args.longitude_col, latitude_col=args.latitude_col)
-    enriched_gdf.to_csv(filepath.parent / f"enriched_{filepath.name}")
+    output_file = os.path.join(os.path.dirname(args.filename), f"enriched_{os.path.basename(args.filename)}")
+    enriched_gdf.to_csv(output_file)

@@ -1,9 +1,9 @@
 import abc
 import geopandas as gpd
 import logging
+import os
 import pandas as pd
 from enum import Enum
-from pathlib import Path
 from pydantic import BaseModel, validator
 from pyquadkey2 import quadkey
 from typing import Dict, List, Optional, Union
@@ -87,11 +87,11 @@ class LocalIggyDataPackage(IggyDataPackage):
         if values["iggy_prefix"] != "unified":
             data_loc_suffix = f"_{values['iggy_prefix']}"
         iggy_dir = f"iggy-package{geom_spec}-{values['iggy_version_id']}{data_loc_suffix}"
-        return v or str(Path(values["base_loc"]) / iggy_dir)
+        return v or os.path.join(values["base_loc"], iggy_dir)
 
     @validator("crosswalk_loc", always=True)
     def set_geoms_loc(cls, v, values):
-        return v or str(Path(values["data_loc"]) / f"{values['crosswalk_prefix']}_{values['iggy_version_id']}")
+        return v or os.path.join(values["data_loc"], f"{values['crosswalk_prefix']}_{values['iggy_version_id']}")
 
     def load(self, boundaries: List[str] = [], features: List[str] = []) -> None:
         """Load Iggy data from parquet files into memory"""
@@ -110,7 +110,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         # load requested boundaries + features if they're not already
         for boundary, boundary_features in bounds_features_to_load.items():
             if boundary_features != self.bounds_features.get(boundary):
-                bnd_file = Path(self.data_loc) / f"{self.iggy_prefix}_{boundary}_{self.iggy_version_id}"
+                bnd_file = os.path.join(self.data_loc, f"{self.iggy_prefix}_{boundary}_{self.iggy_version_id}")
                 df = pd.read_parquet(bnd_file)
                 df.columns = df.columns.map(lambda x: str(x) + f"_{boundary}")
                 if boundary_features:
