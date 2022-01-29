@@ -145,7 +145,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         self, points_crosswalk: Union[pd.DataFrame, gpd.GeoDataFrame], method: ResolveDupsEnum = "largest_area"
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Crosswalk duplicates can happen if there is an overlap in the underlying boundary
-        data for a given level of granularity. This function resolves duplicates in the 
+        data for a given level of granularity. This function resolves duplicates in the
         enriched feature space by choosing the boundary to use based on largest/smallest population
         or area.
         """
@@ -202,7 +202,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
             points_crosswalk.drop(["qk"], axis=1, inplace=True)
-        if points_crosswalk.shape[0] != points.shape[0]: 
+        if points_crosswalk.shape[0] != points.shape[0]:
             points_crosswalk = self._resolve_duplicates(points_crosswalk, method=resolve_dups)
 
         # join boundaries aggregated data
