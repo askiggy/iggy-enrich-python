@@ -27,6 +27,13 @@ class GeomTypeEnum(str, Enum):
     wkt = "wkt"
 
 
+class ResolveDupsEnum(str, Enum):
+    smallest_area = "smallest_area"
+    smallest_population = "smallest_population"
+    largest_area = "largest_area"
+    largest_population = "largest_population"
+
+
 class IggyDataPackage(BaseModel, abc.ABC):
     iggy_version_id: str
     crosswalk_prefix: str
@@ -134,6 +141,43 @@ class LocalIggyDataPackage(IggyDataPackage):
 
         self.bounds_features = bounds_features_to_load
 
+    def _resolve_duplicates(
+        self, points_crosswalk: Union[pd.DataFrame, gpd.GeoDataFrame], method: ResolveDupsEnum = "largest_area"
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Crosswalk duplicates can happen if there is an overlap in the underlying boundary
+        data for a given level of granularity. This function resolves duplicates in the 
+        enriched feature space by choosing the boundary to use based on largest/smallest population
+        or area.
+        """
+        idx_name = points_crosswalk.index.name
+        df = points_crosswalk.copy()
+        df.reset_index(inplace=True)
+
+        id_cols = list(set([f"{b}_id" for b in KNOWN_BOUNDARIES]) & set(df.columns))
+        dup_bounds = []
+        for col in id_cols:
+            if not df.duplicated(subset=col).any():
+                dup_bounds.append(col.replace("_id", ""))
+
+        for bnd in dup_bounds:
+            if method == ResolveDupsEnum.largest_area:
+                dedup_col = f"{bnd}_area_sqkm"
+                ascending = False
+            elif method == ResolveDupsEnum.smallest_area:
+                dedup_col = f"{bnd}_area_sqkm"
+                ascending = True
+            elif method == ResolveDupsEnum.largest_population:
+                dedup_col = f"{bnd}_population"
+                ascending = False
+            elif method == ResolveDupsEnum.smallest_population:
+                dedup_col = f"{bnd}_population"
+                ascending = True
+            df.sort_values(dedup_col, ascending=ascending, inplace=True)
+            df.drop_duplicates(idx_name, inplace=True)
+
+        df.set_index(idx_name, inplace=True)
+        return df
+
     def enrich(
         self,
         points: Union[pd.DataFrame, gpd.GeoDataFrame],
@@ -141,6 +185,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         longitude_col: str = "longitude",
         zoom: int = 19,
         drop_qk_col: bool = True,
+        resolve_dups: ResolveDupsEnum = "largest_area",
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Enrich a DataFrame or GeoDataFrame with Iggy columns"""
         # join input points to iggy quadkeys
@@ -148,7 +193,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         if not points.index.name:
             points_.index.name = "points_index"
         if type(points_) == gpd.GeoDataFrame:
-            points_["qk"] = points_.geometry.apply(lambda p: quadkey.from_geo((p.y, p.x), level=zoom))
+            points_["qk"] = points_.geometry.apply(lambda p: str(quadkey.from_geo((p.y, p.x), level=zoom)))
         else:
             points_["qk"] = points_.apply(
                 lambda row: str(quadkey.from_geo((row[latitude_col], row[longitude_col]), level=zoom)),
@@ -157,7 +202,8 @@ class LocalIggyDataPackage(IggyDataPackage):
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
             points_crosswalk.drop(["qk"], axis=1, inplace=True)
-        assert points_crosswalk.shape[0] == points.shape[0]
+        if points_crosswalk.shape[0] != points.shape[0]: 
+            points_crosswalk = self._resolve_duplicates(points_crosswalk, method=resolve_dups)
 
         # join boundaries aggregated data
         drop_xtra_cols = ["id", "name", "geometry"]
