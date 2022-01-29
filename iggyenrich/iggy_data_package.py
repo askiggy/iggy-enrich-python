@@ -157,7 +157,10 @@ class LocalIggyDataPackage(IggyDataPackage):
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
             points_crosswalk.drop(["qk"], axis=1, inplace=True)
-        assert points_crosswalk.shape[0] == points.shape[0]
+        if points_crosswalk.shape[0] != points.shape[0]: # overlap in underlying boundary data
+            points_crosswalk.reset_index(inplace=True)
+            points_crosswalk.drop_duplicates(points_.index.name, inplace=True)
+            points_crosswalk.set_index(points_.index.name, inplace=True)
 
         # join boundaries aggregated data
         drop_xtra_cols = ["id", "name", "geometry"]
