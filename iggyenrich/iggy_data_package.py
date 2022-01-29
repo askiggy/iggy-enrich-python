@@ -202,7 +202,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
             points_crosswalk.drop(["qk"], axis=1, inplace=True)
-        if points_crosswalk.shape[0] != points.shape[0]: 
+        if points_crosswalk.shape[0] != points.shape[0]:
             points_crosswalk = self._resolve_duplicates(points_crosswalk, method=resolve_dups)
 
         # join boundaries aggregated data
