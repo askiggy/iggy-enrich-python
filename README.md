@@ -128,6 +128,17 @@ enriched_gdf = iggy.enrich_df(gdf)
 
 You can find our Data README [here](https://www.askiggy.com/place-data-readme) and our Data Dictionary [here](https://docs.askiggy.com/reference/data-dictionary).
 
+## Dev
+
+### Running tests
+
+Tests are located in `tests` directory and can be run as:
+
+```sh
+pipenv run python tests/test_iggy_enrich.py
+pipenv run python tests/test_local_iggy_data_package.py
+```
+
 ## Contact us
 
 For questions or issues with using this code, please [add a New Issue](https://github.com/askiggy/iggy-enrich-python/issues/new) and we'll respond as quickly as possible.
