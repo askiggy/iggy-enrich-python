@@ -25,10 +25,22 @@ class IggyEnrich(BaseModel):
         df: Union[pd.DataFrame, gpd.GeoDataFrame],
         latitude_col: str = "latitude",
         longitude_col: str = "longitude",
+        census_block_group_col: str = None,
+        census_tract_col: str = None,
+        zipcode_col: str = None,
+        metro_col: str = None,
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Enrich geometry from input [Geo]DataFrame and return as new
         [Geo]DataFrame with same index, additional columns"""
-        enriched_gdf = self.iggy_package.enrich(df, latitude_col=latitude_col, longitude_col=longitude_col)
+        enriched_gdf = self.iggy_package.enrich(
+            df,
+            latitude_col=latitude_col,
+            longitude_col=longitude_col,
+            census_block_group_col=census_block_group_col,
+            census_tract_col=census_tract_col,
+            zipcode_col=zipcode_col,
+            metro_col=metro_col,
+        )
         return enriched_gdf
 
     def enrich_points(
@@ -52,6 +64,7 @@ class IggyEnrich(BaseModel):
 
 
 if __name__ == "__main__":
+    # TODO: Add options to enrich by zip etc
     parser = argparse.ArgumentParser(description="Enrich data with location features using Iggy")
     parser.add_argument(
         "-f",

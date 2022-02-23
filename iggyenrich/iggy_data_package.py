@@ -167,13 +167,39 @@ class LocalIggyDataPackage(IggyDataPackage):
         elif method == ResolveDupsEnum.smallest_population:
             dedup_cols = [f"{bnd}_population" for bnd in id_cols]
             ascending = True
-            
+
         df.sort_values(by=dedup_cols, ascending=ascending, inplace=True)
         df.drop_duplicates(idx_name, inplace=True)
         df.set_index(idx_name, inplace=True)
         return df
 
     def enrich(
+        self,
+        points: Union[pd.DataFrame, gpd.GeoDataFrame],
+        latitude_col: str = "latitude",
+        longitude_col: str = "longitude",
+        census_block_group_col: str = None,
+        census_tract_col: str = None,
+        zipcode_col: str = None,
+        metro_col: str = None,
+        resolve_dups: ResolveDupsEnum = "largest_area",
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        if longitude_col and latitude_col:
+            return self._enrich_points(
+                points, latitude_col=latitude_col, longitude_col=longitude_col, resolve_dups=resolve_dups
+            )
+        elif census_block_group_col:
+            pass
+        elif census_tract_col:
+            pass
+        elif zipcode_col:
+            pass
+        elif metro_col:
+            pass
+        else:
+            pass  # TODO: error
+
+    def _enrich_points(
         self,
         points: Union[pd.DataFrame, gpd.GeoDataFrame],
         latitude_col: str = "latitude",

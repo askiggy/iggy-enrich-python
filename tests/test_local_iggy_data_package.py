@@ -57,7 +57,7 @@ def test_enrich_features_df(pkg: LocalIggyDataPackage) -> pd.DataFrame:
     test_points = [wkt.loads(pt) for pt in pkg.crosswalk_data.quadkey_centroid_geometry.sample(n=25)]
     test_df = pd.DataFrame(
         {
-            "point_id": [2 ** x for x in range(len(test_points))],
+            "point_id": [2**x for x in range(len(test_points))],
             "latitude": [pt.y for pt in test_points],
             "longitude": [pt.x for pt in test_points],
         },
@@ -77,7 +77,7 @@ def test_enrich_features_gdf(pkg: LocalIggyDataPackage) -> gpd.GeoDataFrame:
     points_geoms = gpd.GeoSeries(test_points, crs="WGS84")
     test_gdf = gpd.GeoDataFrame(
         {
-            "point_id": [2 ** x for x in range(len(test_points))],
+            "point_id": [2**x for x in range(len(test_points))],
         },
         geometry=points_geoms,
     )
