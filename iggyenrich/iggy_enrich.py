@@ -66,7 +66,6 @@ class IggyEnrich(BaseModel):
 
 
 if __name__ == "__main__":
-    # TODO: Add options to enrich by zip etc
     parser = argparse.ArgumentParser(description="Enrich data with location features using Iggy")
     parser.add_argument(
         "-f",
@@ -101,14 +100,37 @@ if __name__ == "__main__":
     parser.add_argument(
         "--longitude_col",
         type=str,
-        default="longitude",
         help="Name of column in input file containing longitude",
     )
     parser.add_argument(
         "--latitude_col",
         type=str,
-        default="latitude",
         help="Name of column in input file containing latitude",
+    )
+    parser.add_argument(
+        "--census_block_group_col",
+        type=str,
+        help="Name of column in input file containing census block group GEOID",
+    )
+    parser.add_argument(
+        "--census_tract_col",
+        type=str,
+        help="Name of column in input file containing census tract GEOID",
+    )
+    parser.add_argument(
+        "--zipcode_col",
+        type=str,
+        help="Name of column in input file containing 5-digit zipcode",
+    )
+    parser.add_argument(
+        "--county_col",
+        type=str,
+        help="Name of column in input file containing 5-digit county FIPS code",
+    )
+    parser.add_argument(
+        "--metro_col",
+        type=str,
+        help="Name of column in input file containing 5-digit census based statistical area GEOID",
     )
     args = parser.parse_args()
 
@@ -122,6 +144,15 @@ if __name__ == "__main__":
     iggy_data = IggyEnrich(iggy_package=LocalIggyDataPackage(**pkg_config))
     iggy_data.load()
 
-    enriched_gdf = iggy_data.enrich_df(df, longitude_col=args.longitude_col, latitude_col=args.latitude_col)
+    enriched_gdf = iggy_data.enrich_df(
+        df,
+        longitude_col=args.longitude_col,
+        latitude_col=args.latitude_col,
+        census_block_group_col=args.census_block_group_col,
+        census_tract_col=args.census_tract_col,
+        zipcode_col=args.zipcode_col,
+        county_col=args.county_col,
+        metro_col=args.metro_col,
+    )
     output_file = os.path.join(os.path.dirname(args.filename), f"enriched_{os.path.basename(args.filename)}")
-    enriched_gdf.to_csv(output_file)
+    enriched_gdf.to_csv(output_file, index=False)

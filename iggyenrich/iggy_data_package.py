@@ -267,31 +267,9 @@ class LocalIggyDataPackage(IggyDataPackage):
 
         return df_joined
 
-    # def _enrich_cbg(self, base_data: pd.DataFrame, census_block_group_col: str) -> pd.DataFrame:
-    #     if "cbg" not in self.bounds_features:
-    #         bounds_features_to_load = self.bounds_features.copy()
-    #         bounds_features_to_load["cbg"] = []
-    #         self._load_bounds_features(bounds_features_to_load)
-
-    #     base_data_ = base_data.copy()
-    #     if not base_data.index.name:
-    #         base_data_.index.name = "base_index"
-    #     df = self.boundary_data["cbg"]
-    #     df_joined = base_data_.merge(df, how="left", left_on=census_block_group_col, right_on="id_cbg")
-    #     assert df_joined.shape[0] == base_data.shape[0]
-
-    #     # remove extraneous columns
-    #     if "id_cbg" not in self.bounds_features["cbg"]:
-    #         df_joined.drop(["id_cbg"], axis=1, inplace=True)
-
-    #     # clean up data types
-    #     bool_cols = [c for c in df_joined.columns if "intersects" in c]
-    #     for c in bool_cols:
-    #         df_joined[c] = df_joined[c].astype(float)
-
-    #     return df_joined
-
     def _enrich_boundary(self, base_data: pd.DataFrame, boundary_name: str, boundary_col: str) -> pd.DataFrame:
+        base_data[boundary_col] = base_data[boundary_col].astype(str)
+
         if boundary_name not in self.bounds_features:
             bounds_features_to_load = self.bounds_features.copy()
             bounds_features_to_load[boundary_name] = []
@@ -305,8 +283,13 @@ class LocalIggyDataPackage(IggyDataPackage):
         assert df_joined.shape[0] == base_data.shape[0]
 
         # remove extraneous columns
-        if f"id_{boundary_name}" not in self.bounds_features[boundary_name]:
-            df_joined.drop([f"id_{boundary_name}"], axis=1, inplace=True)
+        drop_xtra_cols = ["id", "name", "geometry"]
+        for col in drop_xtra_cols:
+            if f"{col}_{boundary_name}" not in self.bounds_features[boundary_name]:
+                try:
+                    df_joined.drop([f"{col}_{boundary_name}"], axis=1, inplace=True)
+                except KeyError:
+                    pass
 
         # clean up data types
         bool_cols = [c for c in df_joined.columns if "intersects" in c]
