@@ -71,7 +71,7 @@ def test_enrich_df_withindex(iggydata: IggyEnrich):
         {"point_id": range(len(TEST_POINTS)), "longitude": lngs, "latitude": lats},
     )
     df.set_index("point_id", inplace=True)
-    enriched_df = iggydata.enrich_df(df)
+    enriched_df = iggydata.enrich_df(df, latitude_col="latitude", longitude_col="longitude")
     assert enriched_df.shape[0] == df.shape[0]
     assert (enriched_df.index == df.index).all()
     assert type(enriched_df) == type(df)

@@ -2,7 +2,7 @@
 
 [Iggy](http://www.askiggy.com) makes it easy for data scientists and machine learning engineers to include location-specific features in their models and analyses. 
 
-This package helps Iggy data users to enrich the points (or latitude/longitude pairs) in their data with Iggy features using Python.
+This package helps Iggy data users to enrich the points (i.e. latitude/longitude pairs), census boundaries, and zipcodes in their data with Iggy features using Python.
 
 ## Getting started
 
@@ -27,7 +27,7 @@ This package helps Iggy data users to enrich the points (or latitude/longitude p
     This repo contains a (very small) sample csv file with the locations of twenty four 7-11 stores in Pinellas County, FL. It has `latitude` and `longitude` columns specifying the location of each store and a few additional attributes. The easiest way to enrich a file like this (with *all* the available Iggy features) is by running:
 
     ```bash
-    python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv --iggy_base_loc <iggy_base_loc> --iggy_version_id <iggy_version_id>
+    python -m iggyenrich.iggy_enrich -f ./sample_data/pinellas_711s.csv --iggy_base_loc <iggy_base_loc> --iggy_version_id <iggy_version_id> --latitude_col latitude --longitude_col longitude
     ```
 
     ...where `<iggy_base_loc>` is the local directory or S3 bucket in which you have your un-compressed Iggy data, and `<iggy_version_id>` is the version of Iggy data you have (something like `"20211110214810"`).
@@ -123,6 +123,30 @@ import geopandas as gpd
 gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude), crs="WGS84")
 enriched_gdf = iggy.enrich_df(gdf)
 ```
+
+### Enrich a DataFrame with census boundaries or zipcodes
+
+What if you don't have point coordinates in your data, but you do have zip codes, census block groups, census tracts, counties, or census-based statistical areas?
+
+You can enrich based on these columns as follows (using zip codes as an example):
+
+```python
+import pandas as pd
+
+df = pd.read_csv('sample_data/pinellas_711s.csv')
+enriched_df = iggy.enrich_df(df, zipcode_col="zip")
+```
+
+These are the specific boundary types and formats supported by `IggyEnrich`:
+
+| boundary type | `enrich_df` parameter | format | example |
+| --- | --- | --- | -- |
+| Census Block Group | `census_block_group_col` | 12-digit GEOID | `121030269131` |
+| Census Tract | `census_tract_col` | 11-digit GEOID | `12103026913` |
+| Zip Code | `zipcode_col` | 5-digit zip | `33763` |
+| County | `county_col` | 5-digit county FIPS code | `12103` |
+| Census-Based Statistical Area | `metro_col` | 5-digit CBSA GEOID | `45300` |
+
 
 ## More resources
 
