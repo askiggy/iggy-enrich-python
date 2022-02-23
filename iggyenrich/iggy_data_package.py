@@ -145,7 +145,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         self, points_crosswalk: Union[pd.DataFrame, gpd.GeoDataFrame], method: ResolveDupsEnum = "largest_area"
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Crosswalk duplicates can happen if there is an overlap in the underlying boundary
-        data for a given level of granularity. This function resolves duplicates in the 
+        data for a given level of granularity. This function resolves duplicates in the
         enriched feature space by choosing the boundary to use based on largest/smallest population
         or area.
         """
@@ -153,28 +153,23 @@ class LocalIggyDataPackage(IggyDataPackage):
         df = points_crosswalk.copy()
         df.reset_index(inplace=True)
 
-        id_cols = list(set([f"{b}_id" for b in KNOWN_BOUNDARIES]) & set(df.columns))
-        dup_bounds = []
-        for col in id_cols:
-            if not df.duplicated(subset=col).any():
-                dup_bounds.append(col.replace("_id", ""))
+        id_cols = [b for b in KNOWN_BOUNDARIES if f"{b}_id" in df.columns]
 
-        for bnd in dup_bounds:
-            if method == ResolveDupsEnum.largest_area:
-                dedup_col = f"{bnd}_area_sqkm"
-                ascending = False
-            elif method == ResolveDupsEnum.smallest_area:
-                dedup_col = f"{bnd}_area_sqkm"
-                ascending = True
-            elif method == ResolveDupsEnum.largest_population:
-                dedup_col = f"{bnd}_population"
-                ascending = False
-            elif method == ResolveDupsEnum.smallest_population:
-                dedup_col = f"{bnd}_population"
-                ascending = True
-            df.sort_values(dedup_col, ascending=ascending, inplace=True)
-            df.drop_duplicates(idx_name, inplace=True)
-
+        if method == ResolveDupsEnum.largest_area:
+            dedup_cols = [f"{bnd}_area_sqkm" for bnd in id_cols]
+            ascending = False
+        elif method == ResolveDupsEnum.smallest_area:
+            dedup_cols = [f"{bnd}_area_sqkm" for bnd in id_cols]
+            ascending = True
+        elif method == ResolveDupsEnum.largest_population:
+            dedup_cols = [f"{bnd}_population" for bnd in id_cols]
+            ascending = False
+        elif method == ResolveDupsEnum.smallest_population:
+            dedup_cols = [f"{bnd}_population" for bnd in id_cols]
+            ascending = True
+            
+        df.sort_values(by=dedup_cols, ascending=ascending, inplace=True)
+        df.drop_duplicates(idx_name, inplace=True)
         df.set_index(idx_name, inplace=True)
         return df
 
