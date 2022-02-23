@@ -115,6 +115,9 @@ class LocalIggyDataPackage(IggyDataPackage):
         logger.info(f"Will load boundaries {bounds_features_to_load.keys()}...")
 
         # load requested boundaries + features if they're not already
+        self._load_bounds_features(bounds_features_to_load)
+
+    def _load_bounds_features(self, bounds_features_to_load: Dict[str, str]) -> None:
         for boundary, boundary_features in bounds_features_to_load.items():
             if boundary_features != self.bounds_features.get(boundary):
                 bnd_file = os.path.join(self.data_loc, f"{self.iggy_prefix}_{boundary}_{self.iggy_version_id}")
@@ -138,7 +141,6 @@ class LocalIggyDataPackage(IggyDataPackage):
         for rb in remove_boundaries:
             logger.info(f"Removed data for boundary {rb}")
             del self.boundary_data[rb]
-
         self.bounds_features = bounds_features_to_load
 
     def _resolve_duplicates(
@@ -176,28 +178,35 @@ class LocalIggyDataPackage(IggyDataPackage):
     def enrich(
         self,
         points: Union[pd.DataFrame, gpd.GeoDataFrame],
-        latitude_col: str = "latitude",
-        longitude_col: str = "longitude",
+        latitude_col: str = None,
+        longitude_col: str = None,
         census_block_group_col: str = None,
         census_tract_col: str = None,
         zipcode_col: str = None,
+        county_col: str = None,
         metro_col: str = None,
         resolve_dups: ResolveDupsEnum = "largest_area",
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
-        if longitude_col and latitude_col:
+        if census_block_group_col:
+            return self._enrich_boundary(points, "cbg", census_block_group_col)
+        elif census_tract_col:
+            return self._enrich_boundary(points, "census_tract", census_tract_col)
+        elif zipcode_col:
+            return self._enrich_boundary(points, "zipcode", zipcode_col)
+        elif county_col:
+            return self._enrich_boundary(points, "county", county_col)
+        elif metro_col:
+            return self._enrich_boundary(points, "metro", metro_col)
+        else:
+            assert type(points) == gpd.GeoDataFrame or (latitude_col and longitude_col), (
+                "If `points` is not a GeoDataFrame, then at least one of the arguments "
+                "`census_block_group_col`, `census_tract_col`, `zipcode_col`, `metro_col`, "
+                "or `latitude_col` and `longitude_col` must be passed as arguments to "
+                "`LocalIggyDataPackage.enrich()`."
+            )
             return self._enrich_points(
                 points, latitude_col=latitude_col, longitude_col=longitude_col, resolve_dups=resolve_dups
             )
-        elif census_block_group_col:
-            pass
-        elif census_tract_col:
-            pass
-        elif zipcode_col:
-            pass
-        elif metro_col:
-            pass
-        else:
-            pass  # TODO: error
 
     def _enrich_points(
         self,
@@ -250,6 +259,54 @@ class LocalIggyDataPackage(IggyDataPackage):
         # remove extraneous columns
         drop_cols = [c for c in self.crosswalk_data.columns]
         df_joined.drop(drop_cols, axis=1, inplace=True)
+
+        # clean up data types
+        bool_cols = [c for c in df_joined.columns if "intersects" in c]
+        for c in bool_cols:
+            df_joined[c] = df_joined[c].astype(float)
+
+        return df_joined
+
+    # def _enrich_cbg(self, base_data: pd.DataFrame, census_block_group_col: str) -> pd.DataFrame:
+    #     if "cbg" not in self.bounds_features:
+    #         bounds_features_to_load = self.bounds_features.copy()
+    #         bounds_features_to_load["cbg"] = []
+    #         self._load_bounds_features(bounds_features_to_load)
+
+    #     base_data_ = base_data.copy()
+    #     if not base_data.index.name:
+    #         base_data_.index.name = "base_index"
+    #     df = self.boundary_data["cbg"]
+    #     df_joined = base_data_.merge(df, how="left", left_on=census_block_group_col, right_on="id_cbg")
+    #     assert df_joined.shape[0] == base_data.shape[0]
+
+    #     # remove extraneous columns
+    #     if "id_cbg" not in self.bounds_features["cbg"]:
+    #         df_joined.drop(["id_cbg"], axis=1, inplace=True)
+
+    #     # clean up data types
+    #     bool_cols = [c for c in df_joined.columns if "intersects" in c]
+    #     for c in bool_cols:
+    #         df_joined[c] = df_joined[c].astype(float)
+
+    #     return df_joined
+
+    def _enrich_boundary(self, base_data: pd.DataFrame, boundary_name: str, boundary_col: str) -> pd.DataFrame:
+        if boundary_name not in self.bounds_features:
+            bounds_features_to_load = self.bounds_features.copy()
+            bounds_features_to_load[boundary_name] = []
+            self._load_bounds_features(bounds_features_to_load)
+
+        base_data_ = base_data.copy()
+        if not base_data.index.name:
+            base_data_.index.name = "base_index"
+        df = self.boundary_data[boundary_name]
+        df_joined = base_data_.merge(df, how="left", left_on=boundary_col, right_on=f"id_{boundary_name}")
+        assert df_joined.shape[0] == base_data.shape[0]
+
+        # remove extraneous columns
+        if f"id_{boundary_name}" not in self.bounds_features[boundary_name]:
+            df_joined.drop([f"id_{boundary_name}"], axis=1, inplace=True)
 
         # clean up data types
         bool_cols = [c for c in df_joined.columns if "intersects" in c]

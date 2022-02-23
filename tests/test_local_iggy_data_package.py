@@ -30,6 +30,8 @@ TEST_FEATURES = [
     "acs_median_year_structure_built_cbg",
     "id_cbg",
 ]
+TEST_CBGS = ["121030251062", "121030251081", "121030249023"]
+TEST_METROS = ["29460", "26140", "33100"]
 
 
 def test_load_package_basic():
@@ -63,7 +65,7 @@ def test_enrich_features_df(pkg: LocalIggyDataPackage) -> pd.DataFrame:
         },
     )
     test_df.set_index("point_id", inplace=True)
-    enriched_points = pkg.enrich(test_df)
+    enriched_points = pkg.enrich(test_df, latitude_col="latitude", longitude_col="longitude")
     assert enriched_points.index.name == "point_id"
     assert enriched_points.shape[0] == test_df.shape[0]
     assert type(enriched_points) == pd.DataFrame
@@ -89,8 +91,29 @@ def test_enrich_features_gdf(pkg: LocalIggyDataPackage) -> gpd.GeoDataFrame:
     return enriched_points
 
 
+def test_enrich_cbg_features(pkg: LocalIggyDataPackage) -> pd.DataFrame:
+    """Test that only cbg features included in TEST_FEATURES are included"""
+    pkg.load(features=TEST_FEATURES)
+    test_df = pd.DataFrame({"cbg": TEST_CBGS})
+    enriched_df = pkg.enrich(test_df, census_block_group_col="cbg")
+    assert enriched_df.shape[0] == len(TEST_CBGS)
+    assert enriched_df.shape[1] == test_df.shape[1] + len([f for f in TEST_FEATURES if f.endswith("_cbg")])
+
+
+def test_enrich_metro_nofeatures(pkg: LocalIggyDataPackage) -> pd.DataFrame:
+    """Test that all metro features are included, since metro boundary
+    is not loaded in pkg"""
+    pkg.load(features=TEST_FEATURES)
+    test_df = pd.DataFrame({"metro": TEST_METROS})
+    enriched_df = pkg.enrich(test_df, metro_col="metro")
+    assert enriched_df.shape[0] == len(TEST_METROS)
+    assert enriched_df.shape[1] > 200
+
+
 if __name__ == "__main__":
     pkg = test_load_package_basic()
     pkg = test_load_package_features(pkg)
     enriched_points_df = test_enrich_features_df(pkg)
     enriched_points_gdf = test_enrich_features_gdf(pkg)
+    enriched_cbg_df = test_enrich_cbg_features(pkg)
+    enriched_metro_df = test_enrich_metro_nofeatures(pkg)

@@ -23,11 +23,12 @@ class IggyEnrich(BaseModel):
     def enrich_df(
         self,
         df: Union[pd.DataFrame, gpd.GeoDataFrame],
-        latitude_col: str = "latitude",
-        longitude_col: str = "longitude",
+        latitude_col: str = None,
+        longitude_col: str = None,
         census_block_group_col: str = None,
         census_tract_col: str = None,
         zipcode_col: str = None,
+        county_col: str = None,
         metro_col: str = None,
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
         """Enrich geometry from input [Geo]DataFrame and return as new
@@ -39,6 +40,7 @@ class IggyEnrich(BaseModel):
             census_block_group_col=census_block_group_col,
             census_tract_col=census_tract_col,
             zipcode_col=zipcode_col,
+            county_col=county_col,
             metro_col=metro_col,
         )
         return enriched_gdf
