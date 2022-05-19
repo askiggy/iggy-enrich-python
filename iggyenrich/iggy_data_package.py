@@ -44,11 +44,7 @@ class IggyDataPackage(BaseModel, abc.ABC):
         arbitrary_types_allowed = True
 
     @abc.abstractmethod
-    def load(
-        self,
-        boundaries: List[str] = [],
-        features: List[str] = [],
-    ) -> None:
+    def load(self, boundaries: List[str] = [], features: List[str] = [],) -> None:
         """Load selected features / boundaries or entire dataset if neither specified"""
         pass
 
@@ -227,8 +223,7 @@ class LocalIggyDataPackage(IggyDataPackage):
             points_["qk"] = points_.geometry.apply(lambda p: str(quadkey.from_geo((p.y, p.x), level=zoom)))
         else:
             points_["qk"] = points_.apply(
-                lambda row: str(quadkey.from_geo((row[latitude_col], row[longitude_col]), level=zoom)),
-                axis=1,
+                lambda row: str(quadkey.from_geo((row[latitude_col], row[longitude_col]), level=zoom)), axis=1,
             )
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
@@ -242,12 +237,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         df_joined = points_crosswalk.copy()
         for bnd in self.bounds_features:
             df_bnd = self.boundary_data[bnd]
-            df_joined = df_joined.merge(
-                df_bnd,
-                how="left",
-                left_on=f"{bnd}_id",
-                right_on=f"id_{bnd}",
-            )
+            df_joined = df_joined.merge(df_bnd, how="left", left_on=f"{bnd}_id", right_on=f"id_{bnd}",)
             for col in drop_xtra_cols:
                 if f"{col}_{bnd}" not in self.bounds_features[bnd]:
                     try:
