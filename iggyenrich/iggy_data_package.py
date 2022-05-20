@@ -7,6 +7,7 @@ from enum import Enum
 from pydantic import BaseModel, validator
 from pyquadkey2 import quadkey
 from typing import Dict, List, Optional, Union
+import pyarrow.parquet as pq
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -43,11 +44,7 @@ class IggyDataPackage(BaseModel, abc.ABC):
         arbitrary_types_allowed = True
 
     @abc.abstractmethod
-    def load(
-        self,
-        boundaries: List[str] = [],
-        features: List[str] = [],
-    ) -> None:
+    def load(self, boundaries: List[str] = [], features: List[str] = [],) -> None:
         """Load selected features / boundaries or entire dataset if neither specified"""
         pass
 
@@ -104,7 +101,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         """Load Iggy data from parquet files into memory"""
         # load iggy crosswalk if not already loaded
         if self.crosswalk_data is None:
-            self.crosswalk_data = pd.read_parquet(self.crosswalk_loc)
+            self.crosswalk_data = pq.read_table(source=self.crosswalk_loc).to_pandas()
             self.crosswalk_data.set_index("id", inplace=True)
             logger.info(f"Loaded {self.crosswalk_data.shape[0]} geometries from {self.crosswalk_loc}.")
         else:
@@ -121,7 +118,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         for boundary, boundary_features in bounds_features_to_load.items():
             if boundary_features != self.bounds_features.get(boundary):
                 bnd_file = os.path.join(self.data_loc, f"{self.iggy_prefix}_{boundary}_{self.iggy_version_id}")
-                df = pd.read_parquet(bnd_file)
+                df = pq.read_table(source=bnd_file).to_pandas()
                 df.columns = df.columns.map(lambda x: str(x) + f"_{boundary}")
                 if boundary_features:
                     keepfeatures = [f for f in boundary_features if f != f"id_{boundary}"] + [f"id_{boundary}"]
@@ -226,8 +223,7 @@ class LocalIggyDataPackage(IggyDataPackage):
             points_["qk"] = points_.geometry.apply(lambda p: str(quadkey.from_geo((p.y, p.x), level=zoom)))
         else:
             points_["qk"] = points_.apply(
-                lambda row: str(quadkey.from_geo((row[latitude_col], row[longitude_col]), level=zoom)),
-                axis=1,
+                lambda row: str(quadkey.from_geo((row[latitude_col], row[longitude_col]), level=zoom)), axis=1,
             )
         points_crosswalk = points_.join(self.crosswalk_data, how="left", on="qk")
         if drop_qk_col:
@@ -241,12 +237,7 @@ class LocalIggyDataPackage(IggyDataPackage):
         df_joined = points_crosswalk.copy()
         for bnd in self.bounds_features:
             df_bnd = self.boundary_data[bnd]
-            df_joined = df_joined.merge(
-                df_bnd,
-                how="left",
-                left_on=f"{bnd}_id",
-                right_on=f"id_{bnd}",
-            )
+            df_joined = df_joined.merge(df_bnd, how="left", left_on=f"{bnd}_id", right_on=f"id_{bnd}",)
             for col in drop_xtra_cols:
                 if f"{col}_{bnd}" not in self.bounds_features[bnd]:
                     try:

@@ -46,19 +46,14 @@ class IggyEnrich(BaseModel):
         return enriched_gdf
 
     def enrich_points(
-        self,
-        points: List[Tuple[float, float]],
-        crs: str = "WGS84",
-        index_name: str = "point_id",
+        self, points: List[Tuple[float, float]], crs: str = "WGS84", index_name: str = "point_id",
     ) -> gpd.GeoDataFrame:
         """Enrich input points and return result as a new GeoDataFrame with
         specified crs and index name"""
         lngs, lats = zip(*points)
         point_geoms = gpd.points_from_xy(lngs, lats)
         blank_gdf = gpd.GeoDataFrame(
-            {index_name: range(len(points)), "geometry": point_geoms},
-            geometry="geometry",
-            crs=crs,
+            {index_name: range(len(points)), "geometry": point_geoms}, geometry="geometry", crs=crs,
         )
         blank_gdf.set_index(index_name, inplace=True)
         enriched_gdf = self.enrich_df(blank_gdf)
@@ -68,10 +63,7 @@ class IggyEnrich(BaseModel):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enrich data with location features using Iggy")
     parser.add_argument(
-        "-f",
-        "--filename",
-        type=str,
-        help="Path to input csv file containing columns for longitude and latitude",
+        "-f", "--filename", type=str, help="Path to input csv file containing columns for longitude and latitude",
     )
     parser.add_argument(
         "--iggy_base_loc",
@@ -80,10 +72,7 @@ if __name__ == "__main__":
         help="Path to base directory containing Iggy dataset",
     )
     parser.add_argument(
-        "--iggy_version_id",
-        type=str,
-        default=IGGY_SAMPLE_VERSION_ID,
-        help="Version ID for Iggy data you're using",
+        "--iggy_version_id", type=str, default=IGGY_SAMPLE_VERSION_ID, help="Version ID for Iggy data you're using",
     )
     parser.add_argument(
         "--iggy_geoms_prefix",
@@ -98,34 +87,22 @@ if __name__ == "__main__":
         help="Prefix for boundary files in Iggy data package",
     )
     parser.add_argument(
-        "--longitude_col",
-        type=str,
-        help="Name of column in input file containing longitude",
+        "--longitude_col", type=str, help="Name of column in input file containing longitude",
     )
     parser.add_argument(
-        "--latitude_col",
-        type=str,
-        help="Name of column in input file containing latitude",
+        "--latitude_col", type=str, help="Name of column in input file containing latitude",
     )
     parser.add_argument(
-        "--census_block_group_col",
-        type=str,
-        help="Name of column in input file containing census block group GEOID",
+        "--census_block_group_col", type=str, help="Name of column in input file containing census block group GEOID",
     )
     parser.add_argument(
-        "--census_tract_col",
-        type=str,
-        help="Name of column in input file containing census tract GEOID",
+        "--census_tract_col", type=str, help="Name of column in input file containing census tract GEOID",
     )
     parser.add_argument(
-        "--zipcode_col",
-        type=str,
-        help="Name of column in input file containing 5-digit zipcode",
+        "--zipcode_col", type=str, help="Name of column in input file containing 5-digit zipcode",
     )
     parser.add_argument(
-        "--county_col",
-        type=str,
-        help="Name of column in input file containing 5-digit county FIPS code",
+        "--county_col", type=str, help="Name of column in input file containing 5-digit county FIPS code",
     )
     parser.add_argument(
         "--metro_col",
