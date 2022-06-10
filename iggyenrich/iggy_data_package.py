@@ -101,7 +101,8 @@ class LocalIggyDataPackage(IggyDataPackage):
         """Load Iggy data from parquet files into memory"""
         # load iggy crosswalk if not already loaded
         if self.crosswalk_data is None:
-            self.crosswalk_data = pq.read_table(source=self.crosswalk_loc).to_pandas()
+            # self.crosswalk_data = pq.read_table(source=self.crosswalk_loc).to_pandas()
+            self.crosswalk_data = pd.read_parquet(self.crosswalk_loc)
             self.crosswalk_data.set_index("id", inplace=True)
             logger.info(f"Loaded {self.crosswalk_data.shape[0]} geometries from {self.crosswalk_loc}.")
         else:
@@ -118,7 +119,8 @@ class LocalIggyDataPackage(IggyDataPackage):
         for boundary, boundary_features in bounds_features_to_load.items():
             if boundary_features != self.bounds_features.get(boundary):
                 bnd_file = os.path.join(self.data_loc, f"{self.iggy_prefix}_{boundary}_{self.iggy_version_id}")
-                df = pq.read_table(source=bnd_file).to_pandas()
+                # df = pq.read_table(source=bnd_file).to_pandas()
+                df = pd.read_parquet(bnd_file)
                 df.columns = df.columns.map(lambda x: str(x) + f"_{boundary}")
                 if boundary_features:
                     keepfeatures = [f for f in boundary_features if f != f"id_{boundary}"] + [f"id_{boundary}"]
